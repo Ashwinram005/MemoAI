@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from '../components/Sidebar';
 import Header from '../components/Header';
+import QuickCapture from '../components/assistant/QuickCapture';
 import { cn } from '../utils';
 
 export default function DashboardLayout() {
@@ -22,6 +23,8 @@ export default function DashboardLayout() {
                         <Outlet />
                     </div>
                 </main>
+
+                <QuickCapture />
             </div>
         </div>
     );

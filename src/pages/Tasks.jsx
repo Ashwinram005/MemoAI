@@ -197,11 +197,26 @@ export default function Tasks() {
                                     <div className="flex items-center gap-4 mt-1.5">
                                         <div className={cn(
                                             "flex items-center text-xs font-medium px-2 py-0.5 rounded",
-                                            isSameDay(new Date(task.dueDate), new Date()) ? "text-orange-700 bg-orange-50" :
-                                                new Date(task.dueDate) < new Date() && task.status !== 'done' ? "text-red-700 bg-red-50" : "text-gray-500 bg-gray-50"
+                                            (task.dueDate && isSameDay(new Date(task.dueDate), new Date())) ? "text-orange-700 bg-orange-50" :
+                                                (task.dueDate && new Date(task.dueDate) < new Date() && task.status !== 'done') ? "text-red-700 bg-red-50" : "text-gray-500 bg-gray-50 dark:bg-gray-700 dark:text-gray-400"
                                         )}>
-                                            <Calendar size={12} className="mr-1.5" />
-                                            {format(new Date(task.dueDate), 'MMM d, yyyy')}
+                                            {task.dueDate ? (
+                                                <>
+                                                    <Calendar size={12} className="mr-1.5" />
+                                                    {(() => {
+                                                        try {
+                                                            return format(new Date(task.dueDate), 'MMM d, yyyy');
+                                                        } catch (e) {
+                                                            return 'No Date';
+                                                        }
+                                                    })()}
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Calendar size={12} className="mr-1.5" />
+                                                    No Date
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

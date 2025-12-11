@@ -8,6 +8,8 @@ import DashboardLayout from './layouts/DashboardLayout';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Chat from './pages/Chat';
+import Dashboard from './pages/Dashboard';
+import IdeaIncubator from './pages/IdeaIncubator';
 import Documents from './pages/Documents';
 import Tasks from './pages/Tasks';
 import Memory from './pages/Memory';
@@ -26,6 +28,8 @@ function App() {
             <Route element={<ProtectedRoute />}>
               <Route element={<DashboardLayout />}>
                 <Route path="/" element={<Chat />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/incubator" element={<IdeaIncubator />} />
                 <Route path="/documents" element={<Documents />} />
                 <Route path="/tasks" element={<Tasks />} />
                 <Route path="/memory" element={<Memory />} />

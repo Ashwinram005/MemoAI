@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { MessageSquare, FileText, CheckSquare, Brain, User, LogOut, ChevronRight } from 'lucide-react';
+import { MessageSquare, FileText, CheckSquare, Brain, User, LogOut, ChevronRight, LayoutDashboard, Lightbulb } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { cn } from '../utils';
 
@@ -8,7 +8,9 @@ export default function Sidebar({ isOpen, onClose }) {
     const { logout } = useAuth();
 
     const navigation = [
+        { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
         { name: 'Chat', href: '/', icon: MessageSquare },
+        { name: 'Incubator', href: '/incubator', icon: Lightbulb },
         { name: 'Documents', href: '/documents', icon: FileText },
         { name: 'Tasks', href: '/tasks', icon: CheckSquare },
         { name: 'Memory', href: '/memory', icon: Brain },

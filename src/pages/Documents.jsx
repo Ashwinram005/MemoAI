@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { uploadDocument, searchDocuments } from '../api/documents';
+import { extractTasksFromText } from '../api/assistant';
 import Upload from '../components/documents/Upload';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { FileText, Search, Trash2, Download, File, Sparkles, Image, FileType, Filter, Grid, List as ListIcon, Clock, HardDrive } from 'lucide-react';
+import { FileText, Search, Trash2, Download, File, Sparkles, Image, FileType, Filter, Grid, List as ListIcon, Clock, HardDrive, ScanSearch } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
 import { cn } from '../utils';
@@ -17,6 +18,7 @@ export default function Documents() {
     const [uploading, setUploading] = useState(false);
     const [searching, setSearching] = useState(false);
     const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
+    const [extractionModal, setExtractionModal] = useState({ isOpen: false, docName: '', text: '' });
 
     useEffect(() => {
         const storedDocs = localStorage.getItem(`documents_${user.userId}`);
@@ -262,8 +264,22 @@ export default function Documents() {
                                         viewMode === 'list' ? "p-4 flex items-center gap-4" : "p-5"
                                     )}
                                 >
-                                    {/* Action Button */}
-                                    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    {/* Action Buttons */}
+                                    <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity flex gap-2">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setExtractionModal({
+                                                    isOpen: true,
+                                                    docName: doc.name,
+                                                    text: `Review ${doc.name} and identify key actions.`
+                                                });
+                                            }}
+                                            className="p-2 bg-white dark:bg-gray-800 text-gray-400 hover:text-indigo-500 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                                            title="Extract Tasks from Document via AI"
+                                        >
+                                            <ScanSearch size={16} />
+                                        </button>
                                         <button
                                             onClick={(e) => { e.stopPropagation(); handleDelete(doc.fileId); }}
                                             className="p-2 bg-white dark:bg-gray-800 text-gray-400 hover:text-red-500 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
@@ -319,6 +335,57 @@ export default function Documents() {
                     )}
                 </div>
             </div>
+            {/* Extraction Modal */}
+            {extractionModal.isOpen && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/50 backdrop-blur-sm" onClick={() => setExtractionModal({ isOpen: false, docName: '', text: '' })}>
+                    <div
+                        className="bg-white dark:bg-gray-900 w-full max-w-lg rounded-2xl shadow-xl ring-1 ring-gray-900/5 p-6 animate-scale-in"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                            <ScanSearch className="text-indigo-500" />
+                            Extract Tasks
+                        </h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                            The AI analyzes text to find actionable items. Add context from <strong>{extractionModal.docName}</strong> below:
+                        </p>
+
+                        <textarea
+                            value={extractionModal.text}
+                            onChange={(e) => setExtractionModal(prev => ({ ...prev, text: e.target.value }))}
+                            className="w-full h-32 p-3 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white placeholder:text-gray-400 text-sm focus:ring-2 focus:ring-indigo-500 mb-4 resize-none"
+                            placeholder="Paste meeting notes or document summary here..."
+                        />
+
+                        <div className="flex justify-end gap-3">
+                            <Button
+                                variant="ghost"
+                                onClick={() => setExtractionModal({ isOpen: false, docName: '', text: '' })}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={async () => {
+                                    const toastId = toast.loading('Analyzing...');
+                                    try {
+                                        const result = await extractTasksFromText(user.userId, extractionModal.text);
+                                        toast.success(`Success! Created ${result?.tasksCreated?.length || 0} tasks.`, { id: toastId });
+                                        setExtractionModal({ isOpen: false, docName: '', text: '' });
+                                    } catch (err) {
+                                        console.error(err);
+                                        // Show specific server error if available
+                                        const msg = err.response?.data?.error || 'Analysis failed';
+                                        toast.error(msg, { id: toastId });
+                                    }
+                                }}
+                                disabled={!extractionModal.text.trim()}
+                            >
+                                Extract Actions
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
