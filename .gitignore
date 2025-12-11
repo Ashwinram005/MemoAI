@@ -22,5 +22,3 @@ dist-ssr
 *.njsproj
 *.sw?
 
-# API Keys and Secrets
-src/config/elevenlabs.js
